@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.staticfiles import StaticFiles
 
 app = FastAPI(title="CloudBox")
 
@@ -13,3 +14,6 @@ def get_fibonacci(index: int):
     if index < 0:
         raise HTTPException(status_code=400, detail="index must be >= 0")
     return {"index": index, "value": fibonacci(index)}
+
+# Отдаём index.html при заходе на "/" и раздаём остальные статические файлы
+app.mount("/", StaticFiles(directory="app/static", html=True), name="static")

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>CloudBox — Fibonacci</title>
+</head>
+<body>
+    <h1>Fibonacci API</h1>
+    <p>Введите номер числа Фибоначчи и нажмите кнопку.</p>
+
+    <input type="number" id="indexInput" value="10" min="0">
+    <button onclick="getFibonacci()">Отправить</button>
+
+    <p id="result"></p>
+
+    <script>
+        async function getFibonacci() {
+            const index = document.getElementById('indexInput').value;
+            const resultEl = document.getElementById('result');
+            resultEl.textContent = 'Загрузка...';
+
+            try {
+                const response = await fetch(`/fibonacci/${index}`);
+                const data = await response.json();
+
+                if (!response.ok) {
+                    resultEl.textContent = 'Ошибка: ' + data.detail;
+                } else {
+                    resultEl.textContent = `Fibonacci(${data.index}) = ${data.value}`;
+                }
+            } catch (e) {
+                resultEl.textContent = 'Ошибка запроса: ' + e;
+            }
+        }
+    </script>
+</body>
+</html>
