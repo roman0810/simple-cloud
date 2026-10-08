@@ -41,3 +41,12 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```bash
 curl http://127.0.0.1:8000/fibonacci/10
 ```
+
+## Тесты
+
+Проект покрыт тестами на `pytest` (см. `tests/test_main.py`): проверяются обычный случай, граничный случай (`index = 0`), ошибка валидации (`index < 0`) и отдача главной страницы.
+
+```bash
+source venv/bin/activate
+pytest -v
+```
