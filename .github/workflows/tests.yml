@@ -7,6 +7,20 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    services:
+      db:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: cloudbox
+          POSTGRES_PASSWORD: cloudbox
+          POSTGRES_DB: cloudbox
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U cloudbox -d cloudbox"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
     steps:
       - uses: actions/checkout@v4
 

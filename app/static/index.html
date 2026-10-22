@@ -6,6 +6,21 @@
 </head>
 <body>
     <h1>Fibonacci API</h1>
+
+    <h2>Аккаунт</h2>
+    <div id="guest">
+        <input type="text" id="username" placeholder="Логин (от 3 символов)">
+        <input type="password" id="password" placeholder="Пароль (от 6 символов)">
+        <button onclick="auth('register')">Регистрация</button>
+        <button onclick="auth('login')">Войти</button>
+    </div>
+    <div id="user" hidden>
+        Вы вошли как <b id="userName"></b>
+        <button onclick="logout()">Выйти</button>
+    </div>
+    <p id="authMessage"></p>
+
+    <h2>Числа Фибоначчи</h2>
     <p>Введите индекс числа Фибоначчи и нажмите кнопку.</p>
 
     <input type="number" id="indexInput" value="10" min="0">
@@ -14,6 +29,49 @@
     <p id="result"></p>
 
     <script>
+        function showUser(username) {
+            document.getElementById('guest').hidden = username !== null;
+            document.getElementById('user').hidden = username === null;
+            document.getElementById('userName').textContent = username;
+        }
+
+        // Спрашиваем сервер, кто мы: браузер сам прикладывает cookie с сессией
+        async function checkLogin() {
+            const response = await fetch('/me');
+            showUser(response.ok ? (await response.json()).username : null);
+        }
+
+        // action: 'register' или 'login'
+        async function auth(action) {
+            const messageEl = document.getElementById('authMessage');
+            const response = await fetch('/' + action, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    username: document.getElementById('username').value,
+                    password: document.getElementById('password').value,
+                }),
+            });
+
+            if (!response.ok) {
+                const data = await response.json();
+                // при ошибке валидации detail - список, иначе строка
+                messageEl.textContent = 'Ошибка: ' + (typeof data.detail === 'string' ? data.detail : 'проверьте логин и пароль');
+            } else if (action === 'register') {
+                messageEl.textContent = 'Регистрация прошла успешно, теперь нажмите «Войти»';
+            } else {
+                messageEl.textContent = '';
+                checkLogin();
+            }
+        }
+
+        async function logout() {
+            await fetch('/logout', {method: 'POST'});
+            checkLogin();
+        }
+
+        checkLogin();
+
         async function getFibonacci() {
             const index = document.getElementById('indexInput').value;
             const resultEl = document.getElementById('result');

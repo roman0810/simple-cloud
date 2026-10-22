@@ -1,14 +1,26 @@
 import logging
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 
 import time
 
+from app.auth import router as auth_router
+from app.db import init_db
+
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 logger = logging.getLogger("cloudbox")
 
-app = FastAPI(title="CloudBox")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    init_db()  # при старте создаём таблицы в БД
+    yield
+
+
+app = FastAPI(title="CloudBox", lifespan=lifespan)
+app.include_router(auth_router)
 
 def fibonacci(n: int) -> int:
     a, b = 0, 1
