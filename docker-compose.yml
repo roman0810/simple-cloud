@@ -3,4 +3,31 @@ services:
     build: .
     ports:
       - "8000:8000"
+    environment:
+      # "db" - это имя сервиса ниже; внутри сети compose контейнеры находят друг друга по имени
+      DATABASE_URL: postgresql://cloudbox:cloudbox@db:5432/cloudbox
+    depends_on:
+      db:
+        condition: service_healthy  # ждём пока БД реально готова принимать подключения
     restart: unless-stopped
+
+  db:
+    image: postgres:17-alpine  # готовый образ с Docker Hub
+    environment:
+      # при первом запуске postgres создаст пользователя и базу с этими именами
+      POSTGRES_USER: cloudbox
+      POSTGRES_PASSWORD: cloudbox
+      POSTGRES_DB: cloudbox
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cloudbox -d cloudbox"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  db_data:

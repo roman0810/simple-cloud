@@ -5,7 +5,6 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /code
 
-# Зависимости копируем и ставим отдельным слоем: он кэшируется, пока requirements.txt не изменился
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
