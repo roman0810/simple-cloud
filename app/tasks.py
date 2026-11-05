@@ -1,9 +1,13 @@
 import json
 import os
+import sys
 import time
 import uuid
 
 import redis
+
+# F(n) для больших n длиннее 4300 цифр - лимита str() по умолчанию
+sys.set_int_max_str_digits(0)
 
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
 QUEUE_KEY = "fib:queue"
@@ -15,7 +19,8 @@ _client: redis.Redis | None = None
 def get_redis() -> redis.Redis:
     global _client
     if _client is None:
-        _client = redis.Redis.from_url(REDIS_URL, decode_responses=True)
+        # socket_timeout должен быть больше таймаута BLPOP в work_once, иначе пустая очередь даёт ошибку чтения
+        _client = redis.Redis.from_url(REDIS_URL, decode_responses=True, socket_timeout=30)
     return _client
 
 
