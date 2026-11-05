@@ -78,13 +78,32 @@
             resultEl.textContent = 'Загрузка...';
 
             try {
-                const response = await fetch(`/fibonacci/${index}`);
-                const data = await response.json();
-
+                const response = await fetch('/fibonacci', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({index: parseInt(index)})
+                });
+                const created = await response.json();
                 if (!response.ok) {
-                    resultEl.textContent = 'Ошибка: ' + data.detail;
-                } else {
-                    resultEl.textContent = `Fibonacci(${data.index}) = ${data.value}`;
+                    resultEl.textContent = 'Ошибка: ' + JSON.stringify(created.detail);
+                    return;
+                }
+                while (true) {
+                    const r = await fetch(`/fibonacci/tasks/${created.task_id}`);
+                    const data = await r.json();
+                    if (!r.ok) {
+                        resultEl.textContent = 'Ошибка: ' + data.detail;
+                        return;
+                    }
+                    if (data.status === 'done') {
+                        resultEl.textContent = `Fibonacci(${data.index}) = ${data.value}`;
+                        return;
+                    }
+                    if (data.status === 'failed') {
+                        resultEl.textContent = 'Ошибка вычисления: ' + data.error;
+                        return;
+                    }
+                    await new Promise(res => setTimeout(res, 500));
                 }
             } catch (e) {
                 resultEl.textContent = 'Ошибка запроса: ' + e;
